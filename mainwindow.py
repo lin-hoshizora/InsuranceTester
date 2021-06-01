@@ -11,6 +11,8 @@ from label import TextLineLabel
 from info_check import InfoCheck
 from config import INFO_ITEMS
 
+import csv
+
 def jp_date(date):
   try:
     year = int(date[:4])
@@ -39,6 +41,7 @@ class Mainwindow(QMainWindow):
     self.syukbn2idx = {}
     self.info_contents = {k: {} for k in INFO_ITEMS}
     self.info_titles = {k: {} for k in INFO_ITEMS}
+    self.info_checkboxs = {k: {} for k in INFO_ITEMS}
     self.send_key = True
     self.info_layout = None
 
@@ -76,12 +79,12 @@ class Mainwindow(QMainWindow):
         self.status_text.setText('認識できませんでした。')
         self.status_text.setStyleSheet("QLabel { color : red; font-size: 22px; background: chartreuse;}")
         if self.syukbn in INFO_ITEMS:
-          print(res['SyuKbn'])
+          # print('80  ',res['SyuKbn'])
           # print(self.syukbn)
           # .setText('認識できませんでした。')
-          print(self.info_contents)
+          # print('82  ',self.info_contents)
           for k in self.info_contents[self.syukbn]:
-            print(k)
+            # print('85  ',k)
             self.info_contents[self.syukbn][k].setText('認識できませんでした。')
           # self.info_view.setVisible(False)
           
@@ -177,6 +180,7 @@ class Mainwindow(QMainWindow):
     if self.info_check is None:
       return
     self.info_check.save_to_file(path)
+    self.save_insurance_csv(path)
     self.status_text2.setText(f'{path}に保存しました')
 
   def save_chip_label(self):
@@ -188,7 +192,8 @@ class Mainwindow(QMainWindow):
     self.status_text.setText(f'{path}に保存しました')
 
   def open_insurance(self):
-    path = QFileDialog.getExistingDirectory(self, '画像フォールダーを選ぶ', '/home/label/file-remote/insurance_backup')
+    # path = QFileDialog.getExistingDirectory(self, '画像フォールダーを選ぶ', '/home/label/file-remote/insurance_backup')
+    path = QFileDialog.getExistingDirectory(self, '画像フォールダーを選ぶ', '/ori_img')
     if path is None or path == '':
       return
     if not Path(path).exists():
@@ -198,7 +203,7 @@ class Mainwindow(QMainWindow):
     self.status_text.setText(f'テスト画像:　{len(self.info_check.checks)}枚')
     self.btn_goto_idx_insurance.setMaximum(len(self.info_check.checks))
 
-  def open_chip_label(self):
+  def open_chip_label(self): 
     path = QFileDialog.getOpenFileName(self, '再確認用データを選ぶ')[0]
     if path is None or path == '':
       return
@@ -343,6 +348,7 @@ class Mainwindow(QMainWindow):
       content.setFont(self.get_font(25))
 
       layout.addWidget(content, 0, 2)
+      print(INFO_ITEMS[syukbn])
       for idx, k in enumerate(INFO_ITEMS[syukbn]):
         title = QLabel(INFO_ITEMS[syukbn][k], self)
         title.setFont(self.get_font(25))
@@ -352,10 +358,22 @@ class Mainwindow(QMainWindow):
         content.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
         content.setAlignment(Qt.AlignLeft)
         content.setAlignment(Qt.AlignVCenter)
+        checkbox = QCheckBox(k)
+        # print('357  ',checkbox.text())
         layout.addWidget(title, idx + 1, 1)
         layout.addWidget(content, idx + 1, 2)
+        layout.addWidget(checkbox, idx + 1, 3)
         self.info_contents[syukbn][k] = content
         self.info_titles[syukbn][k] = title
+
+        self.info_checkboxs[syukbn][k] = checkbox
+        # self.info_checkboxs[syukbn][k].stateChanged.connect(lambda:self.btnstate(self.info_checkboxs[syukbn][k]))
+        self.info_checkboxs[syukbn][k].toggled.connect(
+                lambda state, checkbox=checkbox: self.checkBoxState(checkbox)  # +++
+            )
+
+
+        
       info.setLayout(layout)
       self.syukbn2idx[syukbn] = syukbn_idx
       info_view.addWidget(info)
@@ -513,8 +531,12 @@ class Mainwindow(QMainWindow):
     if self.syukbn in INFO_ITEMS:
       for k in self.info_contents[self.syukbn]:
         self.info_contents[self.syukbn][k].setText('')
+    
     insurance = self.info_check.next()
-    print('next')    
+    print('next')
+    info_checks = self.info_check.get_info_checkbox()
+    self.set_checkbox_status(info_checks)
+
     if self.send_key:
       self.show_insurance(insurance)
       self.send_key = False
@@ -526,6 +548,13 @@ class Mainwindow(QMainWindow):
       for k in self.info_contents[self.syukbn]:
         self.info_contents[self.syukbn][k].setText('')
     insurance = self.info_check.prev()
+
+    print('prev')
+    info_checks = self.info_check.get_info_checkbox()
+    self.set_checkbox_status(info_checks)
+
+
+
     if self.send_key:
       self.show_insurance(insurance)
       self.send_key = False
@@ -585,7 +614,7 @@ class Mainwindow(QMainWindow):
     self.status_text.setText(msg)
 
   def print_fonts(self):
-    print(QFontDatabase().families())
+    print('588  ',QFontDatabase().families())
 
   def choose_pred(self):
     self.confirm_txt.setText(self.pred_txt.text())
@@ -616,3 +645,41 @@ class Mainwindow(QMainWindow):
         self.save_chip_label()
     elif answer & QMessageBox.Cancel:
       e.ignore()
+
+  def checkBoxState(self,b):
+    info_check = {}
+    for k,v in self.info_checkboxs['主保険'].items():
+      # print('646  ',k)
+      info_check[str(v.text())]=v.isChecked()
+      print(f"{v.text()}:  {v.isChecked()}")
+    if self.info_check:
+      self.info_check.set_info_checkbox(info_check)
+
+  def set_checkbox_status(self,info_checks):
+    print(info_checks)
+    if info_checks:
+      for k,v in self.info_checkboxs['主保険'].items():
+        print('659 ',v,info_checks[k])
+        v.setChecked(info_checks[k])
+    else:
+      for k,v in self.info_checkboxs['主保険'].items():
+        v.setChecked(False)
+        
+  def save_insurance_csv(self,path):
+    category = INFO_ITEMS['主保険']
+    with open(path+'.csv', 'w', newline='') as csvfile:
+      fieldnames = ['img_path', 'error']
+      writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+      writer.writeheader()
+      for key in list(self.info_check.checks.keys()):
+        data_value = self.info_check.checks[key]
+        errors_status = []
+        if data_value == {}:
+          pass
+        else:   
+          info_checkbox = data_value['info_checkbox']
+          for i in list(info_checkbox.keys()):
+            if info_checkbox[i]:
+              errors_status.append(category[i])
+        print(errors_status)
+        writer.writerow({'img_path': key, 'error': errors_status})

@@ -16,6 +16,9 @@ class InfoCheck:
     self.gt_folder = self.findex_folder / 'Almex/01_Patient/Output/done/'
     self.invalid_only = False
 
+
+
+
   def get_gt(self, img_path):
     if not self.findex_folder.is_mount():
       print('XML folder not mounted!')
@@ -111,3 +114,12 @@ class InfoCheck:
       self.checks = pickle.load(f)
     self.keys = list(self.checks.keys())
     self.idx = 0
+  
+
+  def set_info_checkbox(self,checkboxs_staus):
+    self.checks[list(self.checks.keys())[self.idx]]['info_checkbox'] = checkboxs_staus
+  def get_info_checkbox(self):
+    if self.checks[list(self.checks.keys())[self.idx]] == {}:
+      return False
+    else:
+      return self.checks[list(self.checks.keys())[self.idx]]['info_checkbox']

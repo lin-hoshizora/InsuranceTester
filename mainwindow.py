@@ -288,6 +288,8 @@ class Mainwindow(QMainWindow):
     btn_layout.addWidget(self.fail_btn)
     btn_layout.addWidget(self.att_btn)
     btn_row.setLayout(btn_layout)
+    ## 合格ボタンを隠す
+    btn_row.setVisible(False)
     img_area_layout = QVBoxLayout()
     img_area_layout.addWidget(self.img_view)
     img_area_layout.addWidget(btn_row)
@@ -360,6 +362,8 @@ class Mainwindow(QMainWindow):
         content.setAlignment(Qt.AlignVCenter)
         checkbox = QCheckBox(k)
         # print('357  ',checkbox.text())
+
+        checkbox.setFont(self.get_font(25))
         layout.addWidget(title, idx + 1, 1)
         layout.addWidget(content, idx + 1, 2)
         layout.addWidget(checkbox, idx + 1, 3)

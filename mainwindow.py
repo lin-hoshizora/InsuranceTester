@@ -614,7 +614,7 @@ class Mainwindow(QMainWindow):
     self.status_text.setText(msg)
 
   def print_fonts(self):
-    print('588  ',QFontDatabase().families())
+    print(QFontDatabase().families())
 
   def choose_pred(self):
     self.confirm_txt.setText(self.pred_txt.text())
@@ -651,15 +651,15 @@ class Mainwindow(QMainWindow):
     for k,v in self.info_checkboxs['主保険'].items():
       # print('646  ',k)
       info_check[str(v.text())]=v.isChecked()
-      print(f"{v.text()}:  {v.isChecked()}")
+      # print('654 ',f"{v.text()}:  {v.isChecked()}")
     if self.info_check:
       self.info_check.set_info_checkbox(info_check)
 
   def set_checkbox_status(self,info_checks):
-    print(info_checks)
+    # print(info_checks)
     if info_checks:
       for k,v in self.info_checkboxs['主保険'].items():
-        print('659 ',v,info_checks[k])
+        # print('659 ',v,info_checks[k])
         v.setChecked(info_checks[k])
     else:
       for k,v in self.info_checkboxs['主保険'].items():

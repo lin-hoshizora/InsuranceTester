@@ -678,7 +678,7 @@ class Mainwindow(QMainWindow):
       for key in list(self.info_check.checks.keys()):
         data_value = self.info_check.checks[key]
         errors_status = []
-        if data_value == {}:
+        if data_value['info_checkbox'] == {}:
           pass
         else:   
           info_checkbox = data_value['info_checkbox']

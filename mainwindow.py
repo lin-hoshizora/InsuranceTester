@@ -70,6 +70,7 @@ class Mainwindow(QMainWindow):
         self.info_view.setVisible(True)
         item_req = {'Patient': {'Birthday': {}}, 'Insurance': {}}
         for k in INFO_ITEMS[res['SyuKbn']]:
+          
           if k == 'Birthday':
             continue
           item_req['Insurance'][k] = {}
@@ -114,6 +115,9 @@ class Mainwindow(QMainWindow):
                     txt = 'PASS'
           else:
             txt = 'None'
+        if txt != 'None' and k == 'HknjaNum':
+          self.info_check.set_hkNum(txt)
+          
         is_visible = not txt == 'PASS'
         self.info_titles[self.syukbn][k].setVisible(is_visible)
         self.info_contents[self.syukbn][k].setVisible(is_visible)
@@ -121,6 +125,7 @@ class Mainwindow(QMainWindow):
           txt = jp_date(txt)
         if not isinstance(txt, str):
           txt = str(txt)
+        
         self.info_contents[self.syukbn][k].setText(txt)
     self.send_key = True
 
@@ -277,7 +282,7 @@ class Mainwindow(QMainWindow):
     self.pass_btn.clicked.connect(self.let_pass)
     self.fail_btn = QPushButton('不合格')
     self.fail_btn.clicked.connect(self.let_fail)
-    self.att_btn = QPushButton('放置')
+    self.att_btn = QPushButton('対象外')
     self.att_btn.clicked.connect(self.let_att)
     self.fp_status = QLabel(self)
     self.fp_status.setFont(self.get_font(25))
@@ -289,7 +294,7 @@ class Mainwindow(QMainWindow):
     btn_layout.addWidget(self.att_btn)
     btn_row.setLayout(btn_layout)
     ## 合格ボタンを隠す
-    btn_row.setVisible(False)
+    btn_row.setVisible(True)
     img_area_layout = QVBoxLayout()
     img_area_layout.addWidget(self.img_view)
     img_area_layout.addWidget(btn_row)
@@ -583,7 +588,7 @@ class Mainwindow(QMainWindow):
       elif self.infos['mark'] == 'fail':
         self.fp_status.setText('不合格')
       else:
-        self.fp_status.setText('一時放置')
+        self.fp_status.setText('対象外')
     else:
       self.fp_status.setText('未確認')
     self.update_insurance_stats()
@@ -595,6 +600,7 @@ class Mainwindow(QMainWindow):
       return
     self.info_check.mark_pass()
     self.fp_status.setText('合格')
+    self.info_check.set_info_skip('合格')
     self.update_insurance_stats()
 
   def let_fail(self):
@@ -602,18 +608,20 @@ class Mainwindow(QMainWindow):
       return
     self.info_check.mark_fail()
     self.fp_status.setText('不合格')
+    self.info_check.set_info_skip('不合格')
     self.update_insurance_stats()
 
   def let_att(self):
     if self.info_check is None:
       return
     self.info_check.mark_att()
-    self.fp_status.setText('一時放置')
+    self.fp_status.setText('対象外')
+    self.info_check.set_info_skip('対象外')
     self.update_insurance_stats()
 
   def update_insurance_stats(self):
     n_pass, n_fail, n_other, n_att, total = self.info_check.get_stats()
-    msg = f'合格: {n_pass}  不合格: {n_fail}  一時放置: {n_att}　未確認: {n_other}     '
+    msg = f'合格: {n_pass}  不合格: {n_fail}  対象外: {n_att}　未確認: {n_other}     '
     self.status_text.setStyleSheet("QLabel { color : black; font-size: 22px; }")
     self.status_text.setText(msg)
 
@@ -672,12 +680,14 @@ class Mainwindow(QMainWindow):
   def save_insurance_csv(self,path):
     category = INFO_ITEMS['主保険']
     with open(path+'.csv', 'w', newline='') as csvfile:
-      fieldnames = ['img_path', 'error']
+      fieldnames = ['img_path', 'NG項目','確認状態','保険者番号']
       writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
       writer.writeheader()
       for key in list(self.info_check.checks.keys()):
         data_value = self.info_check.checks[key]
         errors_status = []
+        hknum=None
+        status=None
         if data_value['info_checkbox'] == {}:
           pass
         else:   
@@ -685,5 +695,14 @@ class Mainwindow(QMainWindow):
           for i in list(info_checkbox.keys()):
             if info_checkbox[i]:
               errors_status.append(category[i])
+        if data_value['HknjaNum'] == {}:
+          pass
+        else:
+           hknum=data_value['HknjaNum']
+        if data_value['skip'] == {}:
+          pass
+        else:
+           status=data_value['skip']
+        
         print(errors_status)
-        writer.writerow({'img_path': key, 'error': errors_status})
+        writer.writerow({'img_path': key, 'NG項目': errors_status, '確認状態':status,'保険者番号':hknum})

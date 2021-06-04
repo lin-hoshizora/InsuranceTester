@@ -6,9 +6,9 @@ import xml.etree.ElementTree as ET
 
 class InfoCheck:
   def __init__(self, path, check_xml):
-    self.checks = {str(p): {'info_checkbox':{}} for p in Path(path).glob('*.jpg')}
+    self.checks = {str(p): {'info_checkbox':{},'skip':{},'HknjaNum':{}} for p in Path(path).glob('*.jpg')}
     for p in Path(path).glob('*.png'):
-      self.checks[str(p)] = {'info_checkbox':{}}
+      self.checks[str(p)] = {'info_checkbox':{},'skip':{},'HknjaNum':{}}
     self.keys = list(self.checks.keys())
     self.idx = 0
     self.check_xml = check_xml
@@ -106,7 +106,7 @@ class InfoCheck:
     return n_pass, n_fail, n_other, n_att, total
 
   def save_to_file(self, path):
-    with open(path, 'wb') as f:
+    with open(path+'.pkl', 'wb') as f:
       pickle.dump(self.checks, f)
 
   def load_from_file(self, path):
@@ -123,3 +123,13 @@ class InfoCheck:
       return False
     else:
       return self.checks[list(self.checks.keys())[self.idx]]['info_checkbox']
+
+
+  def set_info_skip(self,info_skip):
+    self.checks[list(self.checks.keys())[self.idx]]['skip'] = info_skip
+    for i in list(self.checks.keys()):
+      print(F"{self.checks[i]}")
+
+
+  def set_hkNum(self,hkNum):
+    self.checks[list(self.checks.keys())[self.idx]]['HknjaNum'] = hkNum

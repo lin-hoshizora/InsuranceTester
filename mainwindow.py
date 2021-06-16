@@ -1,7 +1,7 @@
 from pathlib import Path
 import json
 import unicodedata
-from PyQt5.QtWidgets import QMainWindow, QTabWidget, QStatusBar, QMenuBar, QToolBar, QMenu, QAction, QMessageBox, QWidget
+from PyQt5.QtWidgets import QMainWindow, QTabWidget, QStatusBar, QMenuBar, QToolBar, QMenu, QAction, QMessageBox, QWidget,QComboBox
 from PyQt5.QtWidgets import QLabel, QPushButton, QPlainTextEdit, QLineEdit, QToolButton, QFileDialog, QSpinBox, QCheckBox, QStackedWidget
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QGridLayout, QSizePolicy
 from PyQt5.QtGui import QFont, QFontDatabase, QPixmap
@@ -45,6 +45,9 @@ class Mainwindow(QMainWindow):
     self.send_key = True
     self.info_layout = None
 
+    self.res = None
+
+
     self.init_gui()
     self.label = None
     
@@ -63,8 +66,11 @@ class Mainwindow(QMainWindow):
 
   def on_ws_msg(self, message):
     res = json.loads(message)
+    print(res)
+    self.res = res
     if 'ImagePath' in res and 'SyuKbn' in res:
       if res['SyuKbn'] != 'Unknown':
+        print(res['SyuKbn'])
         self.syukbn = res['SyuKbn']
         self.info_view.setCurrentIndex(self.syukbn2idx[self.syukbn])
         self.info_view.setVisible(True)
@@ -342,6 +348,7 @@ class Mainwindow(QMainWindow):
 
   def get_infos(self):
     info_view = QStackedWidget(self)
+
     
     for syukbn_idx, syukbn in enumerate(INFO_ITEMS.keys()):
       info = QWidget(self)
@@ -349,12 +356,17 @@ class Mainwindow(QMainWindow):
       layout = QGridLayout()
       title = QLabel('主区分', self)
       title.setFont(self.get_font(25))
-      
       layout.addWidget(title, 0, 1)
       content = QLabel(syukbn, self)
       content.setFont(self.get_font(25))
-
       layout.addWidget(content, 0, 2)
+
+      choices = ['主保険','公費','高齢受給者','限度額認証']
+      title_combobox = QComboBox()
+      title_combobox.addItems(choices)
+      title_combobox.activated[str].connect(self.change_syukbn)
+      layout.addWidget(title_combobox, 0, 3)
+  
       print(INFO_ITEMS[syukbn])
       for idx, k in enumerate(INFO_ITEMS[syukbn]):
         title = QLabel(INFO_ITEMS[syukbn][k], self)
@@ -385,6 +397,7 @@ class Mainwindow(QMainWindow):
         
       info.setLayout(layout)
       self.syukbn2idx[syukbn] = syukbn_idx
+      
       info_view.addWidget(info)
     return info_view
 
@@ -544,11 +557,12 @@ class Mainwindow(QMainWindow):
     insurance = self.info_check.next()
     print('next')
     info_checks = self.info_check.get_info_checkbox()
-    self.set_checkbox_status(info_checks)
+    self.set_checkbox_status(info_checks,self.syukbn)
 
     if self.send_key:
       self.show_insurance(insurance)
       self.send_key = False
+    self.res = None
 
   def show_prev_insurance(self):
     if self.info_check is None:
@@ -560,13 +574,12 @@ class Mainwindow(QMainWindow):
 
     print('prev')
     info_checks = self.info_check.get_info_checkbox()
-    self.set_checkbox_status(info_checks)
-
-
-
+    self.set_checkbox_status(info_checks,self.syukbn)
+    
     if self.send_key:
       self.show_insurance(insurance)
       self.send_key = False
+    self.res = None
 
   def show_certain_insurance(self):
     if self.info_check is None:
@@ -660,21 +673,25 @@ class Mainwindow(QMainWindow):
 
   def checkBoxState(self,b):
     info_check = {}
-    for k,v in self.info_checkboxs['主保険'].items():
+    if not self.syukbn:
+      return
+    for k,v in self.info_checkboxs[self.syukbn].items():
       # print('646  ',k)
       info_check[str(v.text())]=v.isChecked()
       # print('654 ',f"{v.text()}:  {v.isChecked()}")
     if self.info_check:
       self.info_check.set_info_checkbox(info_check)
 
-  def set_checkbox_status(self,info_checks):
+  def set_checkbox_status(self,info_checks,syukbn):
+    if not syukbn:
+      return
     # print(info_checks)
     if info_checks:
-      for k,v in self.info_checkboxs['主保険'].items():
+      for k,v in self.info_checkboxs[syukbn].items():
         # print('659 ',v,info_checks[k])
         v.setChecked(info_checks[k])
     else:
-      for k,v in self.info_checkboxs['主保険'].items():
+      for k,v in self.info_checkboxs[syukbn].items():
         v.setChecked(False)
         
   def save_insurance_csv(self,path):
@@ -706,3 +723,11 @@ class Mainwindow(QMainWindow):
         
         print(errors_status)
         writer.writerow({'img_path': key, 'NG項目': errors_status, '確認状態':status,'保険者番号':hknum})
+
+
+  def change_syukbn(self,text):
+    
+    self.info_view.setCurrentIndex(self.syukbn2idx[text])
+    self.info_view.setVisible(True)
+    if self.res:
+      print(self.res)

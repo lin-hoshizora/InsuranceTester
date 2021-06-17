@@ -42,17 +42,21 @@ class Mainwindow(QMainWindow):
     self.info_contents = {k: {} for k in INFO_ITEMS}
     self.info_titles = {k: {} for k in INFO_ITEMS}
     self.info_checkboxs = {k: {} for k in INFO_ITEMS}
+    self.info_combobox = {k: None for k in INFO_ITEMS}
+
     self.send_key = True
     self.info_layout = None
 
-    self.res = None
-
-
+    
     self.init_gui()
     self.label = None
     
     info_check = None
     self.syukbn = None
+
+    self.res = None
+    
+
 
   def init_ws(self):
     self.ws_client = QtWebSockets.QWebSocket()
@@ -133,6 +137,11 @@ class Mainwindow(QMainWindow):
           txt = str(txt)
         
         self.info_contents[self.syukbn][k].setText(txt)
+    #debug
+    if not self.syukbn:
+      pass
+    else:
+      self.info_combobox[self.syukbn].setCurrentText(self.syukbn)
     self.send_key = True
 
   def on_ws_err(self, error_code):
@@ -348,8 +357,7 @@ class Mainwindow(QMainWindow):
 
   def get_infos(self):
     info_view = QStackedWidget(self)
-
-    
+   
     for syukbn_idx, syukbn in enumerate(INFO_ITEMS.keys()):
       info = QWidget(self)
       info.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
@@ -361,11 +369,17 @@ class Mainwindow(QMainWindow):
       content.setFont(self.get_font(25))
       layout.addWidget(content, 0, 2)
 
+
+
+
+      #combobox need only one
       choices = ['主保険','公費','高齢受給者','限度額認証']
       title_combobox = QComboBox()
       title_combobox.addItems(choices)
       title_combobox.activated[str].connect(self.change_syukbn)
+      self.info_combobox[syukbn] = title_combobox 
       layout.addWidget(title_combobox, 0, 3)
+      
   
       print(INFO_ITEMS[syukbn])
       for idx, k in enumerate(INFO_ITEMS[syukbn]):
@@ -727,7 +741,33 @@ class Mainwindow(QMainWindow):
 
   def change_syukbn(self,text):
     
+    print(self.syukbn,text)
+
     self.info_view.setCurrentIndex(self.syukbn2idx[text])
     self.info_view.setVisible(True)
-    if self.res:
-      print(self.res)
+
+    print(self.info_combobox)
+    self.info_combobox[text].setCurrentText(text)
+
+    # print(list(INFO_ITEMS[text].keys()))
+
+    # for key in list(INFO_ITEMS[self.syukbn].keys()):
+    #   print(self.info_contents[self.syukbn][key].text())
+
+    ocr_syukbn_centent_keys = list(INFO_ITEMS[self.syukbn].keys())
+    select_syukbn_content_keys = list(INFO_ITEMS[text].keys())
+    for key in select_syukbn_content_keys:
+      if key in ocr_syukbn_centent_keys:
+        self.info_contents[text][key].setText(self.info_contents[self.syukbn][key].text())
+      else:
+        self.info_contents[text][key].setText("None")
+        print(f"select have not {key}")
+
+    # for key in list(INFO_ITEMS[text].keys()):
+    #    self.info_contents[self.syukbn][key].text()
+
+    # print(INFO_ITEMS[text])
+    # print(self.info_contents)
+    # if self.res:
+    #   print(self.res)
+      # print(self.res['Insurance'])

@@ -6,15 +6,16 @@ import xml.etree.ElementTree as ET
 
 class InfoCheck:
   def __init__(self, path, check_xml):
-    self.checks = {str(p): {'info_checkbox':{},'skip':{},'HknjaNum':{}} for p in Path(path).glob('*.jpg')}
+    self.checks = {str(p): {'info_checkbox':{},'skip':{},'HknjaNum':{},'syukbn':{}} for p in Path(path).glob('*.jpg')}
     for p in Path(path).glob('*.png'):
-      self.checks[str(p)] = {'info_checkbox':{},'skip':{},'HknjaNum':{}}
+      self.checks[str(p)] = {'info_checkbox':{},'skip':{},'HknjaNum':{},'syukbn':{}}
     self.keys = list(self.checks.keys())
     self.idx = 0
     self.check_xml = check_xml
     self.findex_folder = Path('/home/label/mnt_findex/')
     self.gt_folder = self.findex_folder / 'Almex/01_Patient/Output/done/'
     self.invalid_only = False
+    
 
 
 
@@ -118,6 +119,7 @@ class InfoCheck:
 
   def set_info_checkbox(self,checkboxs_staus):
     self.checks[list(self.checks.keys())[self.idx]]['info_checkbox'] = checkboxs_staus
+    
   def get_info_checkbox(self):
     if self.checks[list(self.checks.keys())[self.idx]] == {}:
       return False
@@ -133,3 +135,6 @@ class InfoCheck:
 
   def set_hkNum(self,hkNum):
     self.checks[list(self.checks.keys())[self.idx]]['HknjaNum'] = hkNum
+
+  def set_syukbn(self,syukbn):
+    self.checks[list(self.checks.keys())[self.idx]]['syukbn'] = syukbn

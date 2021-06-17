@@ -55,6 +55,9 @@ class Mainwindow(QMainWindow):
     self.syukbn = None
 
     self.res = None
+
+    #combobox
+    self.select_syukbn = None
     
 
 
@@ -571,7 +574,8 @@ class Mainwindow(QMainWindow):
     insurance = self.info_check.next()
     print('next')
     info_checks = self.info_check.get_info_checkbox()
-    self.set_checkbox_status(info_checks,self.syukbn)
+    print(info_checks)
+    self.set_checkbox_status(info_checks)
 
     if self.send_key:
       self.show_insurance(insurance)
@@ -588,7 +592,7 @@ class Mainwindow(QMainWindow):
 
     print('prev')
     info_checks = self.info_check.get_info_checkbox()
-    self.set_checkbox_status(info_checks,self.syukbn)
+    self.set_checkbox_status(info_checks)
     
     if self.send_key:
       self.show_insurance(insurance)
@@ -686,32 +690,52 @@ class Mainwindow(QMainWindow):
       e.ignore()
 
   def checkBoxState(self,b):
-    info_check = {}
-    if not self.syukbn:
-      return
-    for k,v in self.info_checkboxs[self.syukbn].items():
-      # print('646  ',k)
-      info_check[str(v.text())]=v.isChecked()
-      # print('654 ',f"{v.text()}:  {v.isChecked()}")
+    info_check = {key: {} for key in list(self.info_checkboxs.keys())}
+    # if not self.syukbn:
+    #   return
+    print('checkBoxState')
+    for key in list(self.info_checkboxs.keys()):
+      for k,v in self.info_checkboxs[key].items():
+        info_check[key][str(v.text())]=v.isChecked()
+    # for k,v in self.info_checkboxs[self.syukbn].items():
+    #   # print('646  ',k)
+    #   info_check[str(v.text())]=v.isChecked()
+    #   # print('654 ',f"{v.text()}:  {v.isChecked()}")
+    all_info_check=[]
+    for key in list(info_check.keys()):
+      for k,v in info_check[key].items():
+        # info_check[key][k].isChecked()
+        print(info_check[key][k])
+        all_info_check.append(info_check[key][k])
+    if True in all_info_check:
+      self.let_fail()
+    else:
+      self.let_pass()
+    
+
     if self.info_check:
       self.info_check.set_info_checkbox(info_check)
+    
+      
 
-  def set_checkbox_status(self,info_checks,syukbn):
-    if not syukbn:
-      return
-    # print(info_checks)
+
+  def set_checkbox_status(self,info_checks):
+    
+    print(info_checks)
     if info_checks:
-      for k,v in self.info_checkboxs[syukbn].items():
-        # print('659 ',v,info_checks[k])
-        v.setChecked(info_checks[k])
+      for key in list(self.info_checkboxs.keys()):
+        for k,v in self.info_checkboxs[key].items():
+          print('715 ',v,info_checks[key][k])
+          v.setChecked(info_checks[key][k])
     else:
-      for k,v in self.info_checkboxs[syukbn].items():
-        v.setChecked(False)
+      for key in list(self.info_checkboxs.keys()):
+        for k,v in self.info_checkboxs[key].items():
+          v.setChecked(False)
         
   def save_insurance_csv(self,path):
-    category = INFO_ITEMS['主保険']
+    # category = INFO_ITEMS[self.syukbn]
     with open(path+'.csv', 'w', newline='') as csvfile:
-      fieldnames = ['img_path', 'NG項目','確認状態','保険者番号']
+      fieldnames = ['img_path', 'NG項目','確認状態','保険者番号','保険種別確認']
       writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
       writer.writeheader()
       for key in list(self.info_check.checks.keys()):
@@ -723,25 +747,34 @@ class Mainwindow(QMainWindow):
           pass
         else:   
           info_checkbox = data_value['info_checkbox']
-          for i in list(info_checkbox.keys()):
-            if info_checkbox[i]:
-              errors_status.append(category[i])
+          for syukbn_ in list(info_checkbox.keys()):
+            for i in list(info_checkbox[syukbn_].keys()):
+              if info_checkbox[syukbn_][i]:
+                # errors_status.append(category[i])
+                errors_status.append(i)
         if data_value['HknjaNum'] == {}:
           pass
         else:
-           hknum=data_value['HknjaNum']
+          hknum=data_value['HknjaNum']
         if data_value['skip'] == {}:
           pass
         else:
-           status=data_value['skip']
-        
+          status=data_value['skip']
+        if data_value['syukbn'] == {}:
+          syukbn_status = ''
+        else:
+          syukbn_status = data_value['syukbn']
+          
         print(errors_status)
-        writer.writerow({'img_path': key, 'NG項目': errors_status, '確認状態':status,'保険者番号':hknum})
+        writer.writerow({'img_path': key, 'NG項目': errors_status, '確認状態':status,'保険者番号':hknum,'保険種別確認':syukbn_status})
 
 
   def change_syukbn(self,text):
     
     print(self.syukbn,text)
+    self.select_syukbn = text
+    if self.syukbn != self.select_syukbn:
+      self.info_check.set_syukbn('不合格')
 
     self.info_view.setCurrentIndex(self.syukbn2idx[text])
     self.info_view.setVisible(True)

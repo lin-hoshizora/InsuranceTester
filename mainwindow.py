@@ -11,6 +11,9 @@ from label import TextLineLabel
 from info_check import InfoCheck
 from config import INFO_ITEMS
 
+
+import subprocess
+
 import csv
 
 def jp_date(date):
@@ -205,6 +208,7 @@ class Mainwindow(QMainWindow):
     self.info_check.save_to_file(path)
     self.save_insurance_csv(path)
     self.status_text2.setText(f'{path}に保存しました')
+    self.ng_img_save()
 
   def save_chip_label(self):
     path = QFileDialog.getSaveFileName(self, '保存パスを選ぶ')[0]
@@ -734,6 +738,8 @@ class Mainwindow(QMainWindow):
         
   def save_insurance_csv(self,path):
     # category = INFO_ITEMS[self.syukbn]
+
+    
     with open(path+'.csv', 'w', newline='') as csvfile:
       fieldnames = ['img_path', 'NG項目','確認状態','保険者番号','保険種別確認']
       writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -767,6 +773,18 @@ class Mainwindow(QMainWindow):
           
         print(errors_status)
         writer.writerow({'img_path': key, 'NG項目': errors_status, '確認状態':status,'保険者番号':hknum,'保険種別確認':syukbn_status})
+
+  def ng_img_save(self):
+    subprocess.run(["rm",'-r',"/ori_img/err/"])
+    subprocess.run(["mkdir","/ori_img/err/"])
+    info_check = self.info_check.checks
+    # print(info_check)
+    for path in list(info_check.keys()):
+      if info_check[path]['skip'] == '不合格':
+        subprocess.run(["cp",path, "/ori_img/err/"])
+
+
+  
 
 
   def change_syukbn(self,text):

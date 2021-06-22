@@ -344,6 +344,7 @@ class Mainwindow(QMainWindow):
     self.btn_goto_idx_insurance = QSpinBox(self)
     self.btn_goto_idx_insurance.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
     self.btn_goto_idx_insurance.setMinimum(0)
+    self.btn_goto_idx_insurance.setMaximum(999)
     self.btn_goto_idx_insurance.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
     self.btn_goto_insurance = QPushButton('枚目へ', self)
     self.btn_goto_insurance.clicked.connect(self.show_certain_insurance)

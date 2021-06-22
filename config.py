@@ -7,10 +7,10 @@ INFO_ITEMS = {
     'Branch': '枝番',
     'HonKzkKbn': '本人家族区分', 
     'YukoEdYmd': '有効終了日', 
-    # 'SkkGetYmd': '資格取得日', 
-    'HknjaName': '受給者名', 
+    # 'HknjaName': '受給者名', 
     # 'KofuYmd': '交付年月日', 
-    'RouFtnKbn': '高齢負担者区分'
+    'RouFtnKbn': '高齢負担者区分',
+    'SkkGetYmd': '資格取得日'
   },
   '高齢受給者': {
     # 'Birthday': '生年月日',

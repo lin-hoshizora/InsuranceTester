@@ -76,7 +76,7 @@ class Mainwindow(QMainWindow):
 
   def on_ws_msg(self, message):
     res = json.loads(message)
-    print(res)
+    print('79',res)
     self.res = res
     if 'ImagePath' in res and 'SyuKbn' in res:
       if res['SyuKbn'] != 'Unknown':
@@ -143,11 +143,13 @@ class Mainwindow(QMainWindow):
           txt = str(txt)
         
         self.info_contents[self.syukbn][k].setText(txt)
+
     #debug
     if not self.syukbn:
       pass
     else:
       self.info_combobox[self.syukbn].setCurrentText(self.syukbn)
+      self.info_check.set_syukbn(self.syukbn)
     self.send_key = True
 
   def on_ws_err(self, error_code):
@@ -740,9 +742,8 @@ class Mainwindow(QMainWindow):
   def save_insurance_csv(self,path):
     # category = INFO_ITEMS[self.syukbn]
 
-    
     with open(path+'.csv', 'w', newline='') as csvfile:
-      fieldnames = ['img_path', 'NG項目','確認状態','保険者番号','保険種別確認']
+      fieldnames = ['img_path', 'NG項目','確認状態','保険者番号','保険種別確認','保険証種別']
       writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
       writer.writeheader()
       for key in list(self.info_check.checks.keys()):
@@ -763,17 +764,23 @@ class Mainwindow(QMainWindow):
           pass
         else:
           hknum=data_value['HknjaNum']
+
         if data_value['skip'] == {}:
           pass
         else:
           status=data_value['skip']
-        if data_value['syukbn'] == {}:
+
+        if data_value['syukbn_status'] == {}:
           syukbn_status = ''
         else:
-          syukbn_status = data_value['syukbn']
-          
+          syukbn_status = data_value['syukbn_status']
+
+        if data_value['syukbn'] == {}:
+          syukbn = ''
+        else:
+          syukbn = data_value['syukbn']
         print(errors_status)
-        writer.writerow({'img_path': key, 'NG項目': errors_status, '確認状態':status,'保険者番号':hknum,'保険種別確認':syukbn_status})
+        writer.writerow({'img_path': key, 'NG項目': errors_status, '確認状態':status,'保険者番号':hknum,'保険種別確認':syukbn_status,'保険証種別':syukbn})
 
   def ng_img_save(self):
     subprocess.run(["rm",'-r',"/ori_img/err/"])
@@ -793,7 +800,11 @@ class Mainwindow(QMainWindow):
     print(self.syukbn,text)
     self.select_syukbn = text
     if self.syukbn != self.select_syukbn:
-      self.info_check.set_syukbn('不合格')
+      self.info_check.set_syukbn_status('不合格')
+    
+    self.info_check.set_syukbn(self.select_syukbn)
+      
+    
 
     self.info_view.setCurrentIndex(self.syukbn2idx[text])
     self.info_view.setVisible(True)

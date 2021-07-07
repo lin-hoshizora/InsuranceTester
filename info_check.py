@@ -6,8 +6,8 @@ import xml.etree.ElementTree as ET
 
 class InfoCheck:
   def __init__(self, path, check_xml):
-    self.checks = {str(p): {'info_checkbox':{},'skip':{},'HknjaNum':{},'syukbn':{},'syukbn_status':{}} for p in Path(path).glob('*.jpg')}
-    for p in Path(path).glob('*.png'):
+    self.checks = {str(p): {'info_checkbox':{},'skip':{},'HknjaNum':{},'syukbn':{},'syukbn_status':{}} for p in sorted(Path(path).glob('*.jpg'))}
+    for p in sorted(Path(path).glob('*.png')):
       self.checks[str(p)] = {'info_checkbox':{},'skip':{},'HknjaNum':{},'syukbn':{},'syukbn_status':{}}
     self.keys = list(self.checks.keys())
     self.idx = 0

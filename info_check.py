@@ -141,3 +141,9 @@ class InfoCheck:
 
   def set_syukbn(self,syukbn):
     self.checks[list(self.checks.keys())[self.idx]]['syukbn'] = syukbn
+    
+  def get_hkNum(self):
+    if self.checks[list(self.checks.keys())[self.idx]]['HknjaNum'] == {}:
+      return False
+    else:
+      return self.checks[list(self.checks.keys())[self.idx]]['HknjaNum']

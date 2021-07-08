@@ -54,7 +54,7 @@ class Mainwindow(QMainWindow):
     self.init_gui()
     self.label = None
     
-    info_check = None
+    self.info_check = None
     self.syukbn = None
 
     self.res = None
@@ -102,7 +102,7 @@ class Mainwindow(QMainWindow):
           # print('82  ',self.info_contents)
           for k in self.info_contents[self.syukbn]:
             # print('85  ',k)
-            self.info_contents[self.syukbn][k].setText('認識できませんでした。')
+            self.info_contents[self.syukbn][k].setText('')
           # self.info_view.setVisible(False)
           
         
@@ -131,8 +131,7 @@ class Mainwindow(QMainWindow):
                     txt = 'PASS'
           else:
             txt = 'None'
-        if txt != 'None' and k == 'HknjaNum':
-          self.info_check.set_hkNum(txt)
+        
           
         is_visible = not txt == 'PASS'
         self.info_titles[self.syukbn][k].setVisible(is_visible)
@@ -141,8 +140,14 @@ class Mainwindow(QMainWindow):
           txt = jp_date(txt)
         if not isinstance(txt, str):
           txt = str(txt)
-        
-        self.info_contents[self.syukbn][k].setText(txt)
+        # print('146',self.info_check.get_hkNum())
+        if k=='HknjaNum' and self.info_check.get_hkNum():
+          print(self.info_check.get_hkNum())
+          print(147)
+          self.info_contents[self.syukbn][k].setText(self.info_check.get_hkNum())
+        else:
+          self.info_contents[self.syukbn][k].setText(txt)
+
 
     #debug
     if not self.syukbn:
@@ -393,14 +398,24 @@ class Mainwindow(QMainWindow):
   
       print(INFO_ITEMS[syukbn])
       for idx, k in enumerate(INFO_ITEMS[syukbn]):
+
         title = QLabel(INFO_ITEMS[syukbn][k], self)
         title.setFont(self.get_font(25))
         title.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        content = QLabel(self)
-        content.setFont(self.get_font(25))
-        content.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        content.setAlignment(Qt.AlignLeft)
-        content.setAlignment(Qt.AlignVCenter)
+        if k == 'HknjaNum':
+          content = QLineEdit(self)
+          content.setFont(self.get_font(25))
+          content.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+          content.setAlignment(Qt.AlignLeft)
+          content.setAlignment(Qt.AlignVCenter)
+          content.textChanged[str].connect(self.hkn_onChanged)
+          pass
+        else:
+          content = QLabel(self)
+          content.setFont(self.get_font(25))
+          content.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+          content.setAlignment(Qt.AlignLeft)
+          content.setAlignment(Qt.AlignVCenter)
         checkbox = QCheckBox(k)
         # print('357  ',checkbox.text())
 
@@ -791,7 +806,6 @@ class Mainwindow(QMainWindow):
       if info_check[path]['skip'] == '不合格':
         subprocess.run(["cp",path, "/ori_img/err/"])
 
-
   
 
 
@@ -801,11 +815,11 @@ class Mainwindow(QMainWindow):
     self.select_syukbn = text
     if self.syukbn != self.select_syukbn:
       self.info_check.set_syukbn_status('不合格')
+    else:
+      self.info_check.set_syukbn_status('合格')
     
     self.info_check.set_syukbn(self.select_syukbn)
       
-    
-
     self.info_view.setCurrentIndex(self.syukbn2idx[text])
     self.info_view.setVisible(True)
 
@@ -834,3 +848,9 @@ class Mainwindow(QMainWindow):
     # if self.res:
     #   print(self.res)
       # print(self.res['Insurance'])
+  def hkn_onChanged(self,hknum):
+    # print('info_check.hkn: ',self.info_check.get_hkNum())
+    print(hknum)
+    if len(hknum)>0: 
+      self.info_check.set_hkNum(hknum)
+    # print('info_check.hkn: ',self.info_check.get_hkNum())

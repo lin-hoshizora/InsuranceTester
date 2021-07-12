@@ -139,6 +139,9 @@ class InfoCheck:
   def set_syukbn_status(self,syukbn_status):
     self.checks[list(self.checks.keys())[self.idx]]['syukbn_status'] = syukbn_status
 
+  def get_syukbn(self):
+    return self.checks[list(self.checks.keys())[self.idx]].get('syukbn',None)
+
   def set_syukbn(self,syukbn):
     self.checks[list(self.checks.keys())[self.idx]]['syukbn'] = syukbn
     

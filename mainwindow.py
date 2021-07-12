@@ -82,8 +82,18 @@ class Mainwindow(QMainWindow):
       if res['SyuKbn'] != 'Unknown':
         print(res['SyuKbn'])
         self.syukbn = res['SyuKbn']
-        self.info_view.setCurrentIndex(self.syukbn2idx[self.syukbn])
-        self.info_view.setVisible(True)
+
+        if self.info_check.get_syukbn():
+          self.info_view.setCurrentIndex(self.syukbn2idx[self.info_check.get_syukbn()])
+          self.info_view.setVisible(True)
+        elif self.syukbn and not self.info_check.get_syukbn():
+          self.info_combobox[self.syukbn].setCurrentText(self.syukbn)
+          self.info_check.set_syukbn(self.syukbn)
+          self.info_view.setCurrentIndex(self.syukbn2idx[self.syukbn])
+          self.info_view.setVisible(True)
+
+
+          
         item_req = {'Patient': {'Birthday': {}}, 'Insurance': {}}
         for k in INFO_ITEMS[res['SyuKbn']]:
           
@@ -149,12 +159,7 @@ class Mainwindow(QMainWindow):
           self.info_contents[self.syukbn][k].setText(txt)
 
 
-    #debug
-    if not self.syukbn:
-      pass
-    else:
-      self.info_combobox[self.syukbn].setCurrentText(self.syukbn)
-      self.info_check.set_syukbn(self.syukbn)
+
     self.send_key = True
 
   def on_ws_err(self, error_code):
@@ -807,7 +812,6 @@ class Mainwindow(QMainWindow):
         subprocess.run(["cp",path, "/ori_img/err/"])
 
   
-
 
   def change_syukbn(self,text):
     

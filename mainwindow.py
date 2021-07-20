@@ -210,7 +210,7 @@ class Mainwindow(QMainWindow):
         self.save_insurance()
       if self.tabs.currentIndex() == 1:
         self.save_chip_label()
-
+  
   def save_insurance(self, path=None):
     path = QFileDialog.getSaveFileName(self, '保存パスを選ぶ', '/home/label/デスクトップ/')[0]
     if path is None or path == '':
@@ -240,7 +240,7 @@ class Mainwindow(QMainWindow):
     self.info_check = InfoCheck(path, self.xml_enable.isChecked())
     self.show_insurance(self.info_check.get_item())
     self.status_text.setText(f'テスト画像:　{len(self.info_check.checks)}枚')
-    self.btn_goto_idx_insurance.setMaximum(len(self.info_check.checks))
+    # self.btn_goto_idx_insurance.setMaximum(len(self.info_check.checks))
 
   def open_chip_label(self): 
     path = QFileDialog.getOpenFileName(self, '再確認用データを選ぶ')[0]
